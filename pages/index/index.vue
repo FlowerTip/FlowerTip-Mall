@@ -40,6 +40,7 @@
 	import {
 		onLoad
 	} from '@dcloudio/uni-app';
+	// import IndexSkt from './components/skt.vue';
 	import BannerList from './components/banner.vue';
 	import EntranceList from './components/entrance.vue';
 	import GoodsList from '../../components/goods-list/index.vue';
@@ -66,15 +67,15 @@
 	onLoad(() => {
 		initData();
 	})
-	
+
 	const gotoBack = () => {
-    uni.navigateBack({
-      delta: 1,
-    })
-  }
+		uni.navigateBack({
+			delta: 1,
+		})
+	}
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 	.index-container {
 		position: relative;
 

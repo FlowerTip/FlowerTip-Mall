@@ -266,6 +266,7 @@
 
 	.order {
 		padding-bottom: 130rpx;
+		margin: 10rpx;
 	}
 
 	// 收货地址卡片

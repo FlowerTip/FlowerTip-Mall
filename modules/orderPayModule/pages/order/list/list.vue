@@ -29,9 +29,13 @@
 				</view>
 			</view>
 			<!-- 数据是否加载完毕 -->
-			<view class="finish" v-show="!isFinish">暂无更多订单</view>
+			<view class="finish" :hidden="!isFinish">{{isLoading ? '正在加载数据' : '暂无更多订单'}}</view>
 		</view>
-		<uv-empty v-else text="还没有购买商品，快去购买吧～" />
+		<uv-empty v-if="isFinish && !orderList.length" text="还没有购买商品，快去购买吧～">
+			<uv-button type="error" class="bottom-button" color="#f3514f" style="padding-top: 20rpx;" @click="goGoodsList">
+				去购买
+			</uv-button>
+		</uv-empty>
 	</view>
 </template>
 
@@ -77,7 +81,17 @@
 			total.value = data.total;
 			loading.value = false;
 			isLoading.value = false
+			if (total.value === 0) {
+				isFinish.value = true;
+			}
 		}
+	}
+	
+	// 去商品列表页面
+	const goGoodsList = () => {
+		uni.navigateTo({
+			url: `/modules/goodModule/pages/goods/list/list`,
+		})
 	}
 
 	// 订单详情

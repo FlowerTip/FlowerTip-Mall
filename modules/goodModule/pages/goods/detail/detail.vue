@@ -30,7 +30,7 @@
 					<text class="label">首页</text>
 				</view>
 				<view class="item" @click="handlerNavPage('/pages/cart/cart')">
-					<uv-badge type="error" max="99" :value="allCount" :offset="allCount > 9 ? [-4, -10] : [-4, 1]" :absolute="true">
+					<uv-badge type="error" max="99" :value="allCount" :offset="allCount > 9 ? [-4, -10] : [-4, 2]" :absolute="true">
 					</uv-badge>
 					<uv-icon name="shopping-cart" size="24"></uv-icon>
 					<text class="label">购物车</text>
@@ -213,7 +213,7 @@
 			}
 		} else {
 			// 立即购买
-			wx.navigateTo({
+			uni.navigateTo({
 				url: `/modules/orderPayModule/pages/order/detail/detail?goodsId=${goodsId}&blessing=${blessing.value}`,
 			})
 		}
@@ -321,7 +321,7 @@
 		padding: 40rpx;
 		position: relative;
 		border-radius: 18rpx;
-		top: -80px;
+		top: -160rpx;
 		height: 220rpx;
 		display: flex;
 		flex-direction: column;
@@ -332,22 +332,22 @@
 			display: flex;
 
 			.price-num {
-				font-size: 18px;
+				font-size: 36rpx;
 				color: #fa4126;
 				font-weight: bold;
 			}
 
 			.price-origin-num {
-				font-size: 12px;
+				font-size: 24rpx;
 				color: #b4babf;
-				margin-left: 4px;
+				margin-left: 8rpx;
 				text-decoration: line-through;
-				margin-top: 6px;
+				margin-top: 12rpx;
 			}
 		}
 
 		.title {
-			font-size: 16px;
+			font-size: 32rpx;
 			font-weight: bold;
 			overflow: hidden;
 			text-overflow: ellipsis;
@@ -355,7 +355,7 @@
 		}
 
 		.desc {
-			font-size: 12px;
+			font-size: 24rpx;
 			color: #999999;
 			overflow: hidden;
 			text-overflow: ellipsis;
@@ -373,10 +373,10 @@
 
 	// 加入购物车、立即购买弹框
 	.sheet-wrapper {
-		padding: 16px;
+		padding: 16rpx;
 
 		.sheet-footer-btn {
-			padding: 16px;
+			padding: 16rpx;
 		}
 	}
 
@@ -387,15 +387,15 @@
 		padding: 0 32rpx 40rpx 0;
 
 		.left {
-			width: 56px;
+			width: 56rpx;
 			display: flex;
 			align-items: center;
 			justify-content: center;
 		}
 
 		.mid {
-			width: 114px;
-			height: 125px;
+			width: 228rpx;
+			height: 250rpx;
 
 			image {
 				height: 100%;
@@ -403,12 +403,12 @@
 		}
 
 		.right {
-			height: 125px;
+			height: 250rpx;
 			flex: 1;
 			display: flex;
 			flex-direction: column;
 			justify-content: space-between;
-			margin-left: 10px;
+			margin-left: 40rpx;
 
 			.title {
 				flex: 1;
@@ -421,6 +421,7 @@
 				-webkit-box-orient: vertical;
 				overflow: hidden;
 				word-break: break-word;
+				text-align: left;
 			}
 
 			.buy {
@@ -429,14 +430,13 @@
 
 				.price {
 					display: flex;
-					/* align-items: flex-end; */
+					align-items: center;
 					color: #fa4126;
 					font-size: 36rpx;
 
 					.symbol {
-						font-size: 10px;
-						margin-right: 2px;
-						margin-top: 8px;
+						font-size: 40rpx;
+						margin-right: 4rpx;
 					}
 				}
 			}
@@ -445,23 +445,24 @@
 
 	// 祝福语
 	.time-wraper {
-		margin-bottom: 12px;
+		margin-bottom: 24rpx;
 
 		.title,
 		.time {
 			justify-content: space-between;
-			font-size: 14px;
+			font-size: 28rpx;
 			color: #333333;
 		}
 
 		.form-textarea {
-			border-radius: 12px;
+			border-radius: 24rpx;
 			background-color: #f7f8fa;
-			padding: 16px 12px;
-			font-size: 13px;
-			margin-top: 12px;
+			padding: 32rpx 24rpx;
+			font-size: 26rpx;
+			margin-top: 24rpx;
 			width: 94%;
-			height: 84px;
+			height: 164rpx;
+			text-align: left;
 		}
 	}
 </style>

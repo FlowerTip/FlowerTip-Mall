@@ -225,6 +225,8 @@
 
 		.price-num {
 			color: #FA4126;
+			font-size: 42rpx;
+			font-weight: 700;
 		}
 	}
 
@@ -284,6 +286,7 @@
 			.buy {
 				display: flex;
 				justify-content: space-between;
+				align-items: center;
 
 				.price {
 					display: flex;

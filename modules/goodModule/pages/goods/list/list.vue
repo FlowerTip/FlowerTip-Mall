@@ -7,11 +7,11 @@
 			</template>
 
 			<!-- 数据是否加载完毕 -->
-			<view class="finish" :hidden="!isFinish">暂无更多商品</view>
+			<view class="finish" :hidden="!isFinish">{{isLoading ? '正在加载数据' : '暂无更多商品'}}</view>
 		</view>
 
 		<!-- 商品为空的时候展示的结构 -->
-		<uv-empty v-else text="该分类下暂无商品，去看看其他商品吧～">
+		<uv-empty v-if="isFinish && !goodsList.length" text="该分类下暂无商品，去看看其他商品吧～">
 			<uv-button type="error" class="bottom-button" color="#f3514f" style="padding-top: 20rpx;" @click="gotoBack">
 				查看其他商品
 			</uv-button>
@@ -64,7 +64,10 @@
 			goodsList.value = [...goodsList.value, ...res.data.records];
 			total.value = res.data.total;
 			loading.value = false;
-			isLoading.value = false
+			isLoading.value = false;
+			if (total.value == 0) {
+				isFinish.value = true;
+			}
 		}
 	}
 
