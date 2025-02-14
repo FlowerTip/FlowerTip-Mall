@@ -51,7 +51,7 @@ class WxRequest {
 
 		// 控制 loading 的显示与隐藏
 		if (options.isLoading && options.method !== 'UPLOAD') {
-			this.queue.length === 0 && wx.showLoading()
+			this.queue.length === 0 && uni.showLoading()
 			this.queue.push('request')
 		}
 
@@ -131,7 +131,7 @@ class WxRequest {
 							this.timerId = setTimeout(() => {
 								this.queue.pop()
 
-								this.queue.length === 0 && wx.hideLoading()
+								this.queue.length === 0 && uni.hideLoading()
 
 								clearTimeout(this.timerId)
 							}, 1)

@@ -38,7 +38,7 @@
 			<view class="order section">
 				<view class="order-title-wrap">
 					<text class="title">我的订单</text>
-					<text class="more">查看更多></text>
+					<view class="more" @click="goMoreOrderPage"><text>查看更多</text><uv-icon name="arrow-right" color="#ccc" size="15"></uv-icon></view>
 				</view>
 
 				<view class="order-content-wrap">
@@ -112,6 +112,13 @@
 	const toLoginPage = () => {
 		uni.navigateTo({
 			url: '/pages/login/login'
+		})
+	}
+	
+	// 查看更多订单
+	const goMoreOrderPage = () => {
+		uni.navigateTo({
+			url: '/modules/orderPayModule/pages/order/list/list'
 		})
 	}
 </script>
@@ -205,6 +212,9 @@
 				.more {
 					color: #ccc;
 					font-size: 24rpx;
+					display: flex;
+					align-items: center;
+					justify-content: space-between;
 				}
 			}
 

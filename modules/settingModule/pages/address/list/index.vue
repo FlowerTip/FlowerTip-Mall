@@ -17,8 +17,8 @@
 								</view>
 							</view>
 
-							<view class="editBtn" @click="toEdit">
-								<uv-icon name="edit-pen" size="22px" color="#999" :data-id="item.id" />
+							<view class="editBtn" @click="toEdit(item.id)">
+								<uv-icon name="edit-pen" size="22px" color="#999" />
 							</view>
 						</view>
 					</uv-swipe-action-item>
@@ -81,10 +81,7 @@
 		}
 	}
 	// 去编辑页面
-	const toEdit = (event) => {
-		const {
-			id
-		} = event.target.dataset
+	const toEdit = (id) => {
 		uni.navigateTo({
 			url: `/modules/settingModule/pages/address/add/index?id=${id}`
 		})

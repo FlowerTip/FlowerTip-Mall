@@ -1,6 +1,6 @@
 <template>
 	<view class="container address">
-		<uv-form :model="addressForm" label-width="120">
+		<uv-form :model="addressForm" :rules="addressFormRules" label-width="120" ref="addressFormRef">
 			<uv-form-item label="收货人" prop="name" borderBottom>
 				<uv-input v-model="addressForm.name" border="none" placeholder="请输入收货人姓名">
 				</uv-input>
@@ -10,8 +10,8 @@
 				</uv-input>
 			</uv-form-item>
 			<uv-form-item label="所在地区" prop="regionList" borderBottom>
-				<uv-input v-model="addressForm.regionList" border="none" placeholder="请选择收货人所在地区" @click="openAddressPicker">
-				</uv-input>
+				<text v-if="!addressForm.regionList" class="placeholder-color" @click="openAddressPicker">请选择收货人所在地区</text>
+				<text v-else @click="openAddressPicker">{{addressForm.regionList}}</text>
 			</uv-form-item>
 			<uv-form-item label="详细地址" prop="address" borderBottom>
 				<uv-input v-model="addressForm.address" border="none" placeholder="门牌号(例：5号楼1单元203室)">
@@ -24,7 +24,9 @@
 		</view>
 		<!-- 提交按钮 -->
 		<button class="button" @click="saveAddrssForm">保存</button>
-		<uv-picker ref="pickerRef" :columns="regionList" keyName="name" @change="pickChange" @confirm="confirm">
+
+		<!-- 所在地区选择器 -->
+		<uv-picker ref="pickerRef" :columns="regionOriginList" keyName="name" @change="pickChange" @confirm="confirm">
 		</uv-picker>
 	</view>
 </template>
@@ -32,7 +34,8 @@
 <script setup>
 	import {
 		reactive,
-		ref
+		ref,
+		computed
 	} from 'vue';
 	import {
 		onLoad
@@ -43,6 +46,33 @@
 	} from '../../../api/address'
 	import regionJson from './region.js';
 
+	const addressFormRef = ref(null);
+	const addressFormRules = {
+		name: {
+			type: 'string',
+			required: true,
+			message: '请填写收货人的姓名',
+			trigger: ['blur', 'change']
+		},
+		phone: {
+			type: 'string',
+			required: true,
+			message: '请填写收货人的手机号',
+			trigger: ['blur', 'change']
+		},
+		address: {
+			type: 'string',
+			required: true,
+			message: '请填写门牌号详细地址',
+			trigger: ['blur', 'change']
+		},
+		regionList: {
+			type: 'string',
+			required: true,
+			message: '请选择收货人所在地区',
+			trigger: ['blur', 'change']
+		}
+	}
 
 	const isDefault = ref(false);
 	const pickerRef = ref(null);
@@ -59,7 +89,7 @@
 		fullAddress: '',
 		isDefault: 0,
 		id: '',
-		regionList: []
+		regionList: ''
 	})
 
 	const addressList = ref([]);
@@ -73,19 +103,28 @@
 		pickerRef.value.open();
 		handlePickValueDefault();
 	}
-	const confirm = () => {
-
+	const confirm = (e) => {
+		addressForm.provinceCode = e.value[0].code;
+		addressForm.provinceName = e.value[0].name;
+		addressForm.cityCode = e.value[1].code;
+		addressForm.cityName = e.value[1].name;
+		addressForm.districtCode = e.value[2].code;
+		addressForm.districtName = e.value[2].name;
+		addressForm.regionList = `${e.value[0].name}/${e.value[1].name}/${e.value[2].name}`;
+		addressFormRef.value.clearValidate('regionList');
 	}
-	let regionList = [];
+
+	const regionOriginList = computed(() => {
+		return [provinces.value, citys.value, areas.value];
+	})
+	let regionOriginData = [];
 	onLoad((option) => {
 		option.id && getAddressDetail(option.id);
-
-		console.log(regionJson, 'regionJson')
 		getData();
 	})
 	const getData = () => {
-		regionList = regionJson;
-		console.log(regionList, 'regionList')
+		regionOriginData = regionJson;
+		provinces.value = regionOriginData.sort((left, right) => (Number(left.code) > Number(right.code) ? 1 : -1));
 		handlePickValueDefault();
 	}
 	const pickChange = (e) => {
@@ -109,7 +148,7 @@
 
 	const handlePickValueDefault = () => {
 		// 设置省
-		pickerValue.value[0] = regionList.findIndex(item => Number(item.id) === defaultValue.value[0]);
+		pickerValue.value[0] = regionOriginData.findIndex(item => Number(item.id) === defaultValue.value[0]);
 		// 设置市
 		citys.value = provinces.value[pickerValue.value[0]]?.children || [];
 		pickerValue.value[1] = citys.value.findIndex(item => Number(item.id) === defaultValue.value[1]);
@@ -127,25 +166,19 @@
 			data
 		} = await reqGetAddressDetail(id)
 		if (code === 200) {
-			regionList.value = [data.provinceName, data.cityName, data.districtName];
 			addressForm.name = data.name;
 			addressForm.address = data.address;
 			addressForm.phone = data.phone;
-			// this.setData({
-			// 	name: data.name,
-			// 	phone: data.phone,
-			// 	address: data.address,
-			// 	provinceName: data.provinceName,
-			// 	provinceCode: data.provinceCode,
-			// 	cityName: data.cityName,
-			// 	cityCode: data.cityCode,
-			// 	districtName: data.districtName,
-			// 	districtCode: data.districtCode,
-			// 	fullAddress: data.fullAddress,
-			// 	isDefault: data.isDefault,
-			// 	regionList: [data.provinceName, data.cityName, data.districtName],
-			// 	id: data.id
-			// })
+			const pName = data.provinceName ? data.provinceName : '北京';
+			addressForm.regionList = pName + '/' + data.cityName + '/' + data.districtName;
+			const currentProvince = regionOriginData.find(item => data.provinceCode == item.code);
+			if (currentProvince) {
+				const currentCity = currentProvince.children.find(item => data.cityCode == item.code);
+				if (currentCity) {
+					const currentDistrict = currentCity.children.find(item => data.districtCode == item.code);
+					defaultValue.value = [currentProvince.id * 1, currentCity.id * 1, currentDistrict.id * 1];
+				}
+			}
 		}
 	}
 
@@ -169,24 +202,31 @@
 		}
 	}
 	// 保存收货地址
-	const saveAddrssForm = async () => {
-		const reqParams = {
-			...addressForm,
-			fullAddress: addressForm.fullAddress + addressForm.address
-		}
-		delete reqParams.regionList
-		console.log(reqParams, 'reqParams');
-		// 验证表单
-		// const {
-		// 	valid
-		// } = await this.onValidate(reqParams)
-		// if (!valid) return
-		// 验证通过保存表单信息
-		saveUserAddress(reqParams)
+	const saveAddrssForm = () => {
+		addressFormRef.value.validate().then(async res => {
+			const reqParams = {
+				...addressForm,
+				fullAddress: addressForm.fullAddress + addressForm.address
+			}
+			delete reqParams.regionList
+			console.log(reqParams, 'reqParams');
+			saveUserAddress(reqParams)
+		}).catch(errors => {
+			if (errors.length > 0) {
+				uni.showToast({
+					icon: 'error',
+					title: '表单校验失败'
+				})
+			}
+		})
 	}
 </script>
 
 <style lang="scss" scoped>
+	.placeholder-color {
+		color: #ccc;
+	}
+
 	.address {
 		background-color: #fff;
 		padding: 20rpx;

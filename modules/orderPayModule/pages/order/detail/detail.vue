@@ -25,18 +25,19 @@
 		</view>
 
 		<view class="order-info">
-			<uv-form :labelWidth="120" labelPosition="top" :model="buyOrderForm" ref="form" class="group">
+			<uv-form :labelWidth="120" labelPosition="top" :model="buyOrderForm" :rules="buyOrderFormRules"
+				ref="buyOrderFormRef" class="group">
 				<uv-form-item label="订购人姓名" prop="buyName" borderBottom>
 					<uv-input v-model="buyOrderForm.buyName" border="none" placeholder="订购人的姓名">
 					</uv-input>
 				</uv-form-item>
-				<uv-form-item label="订购人的手机号" prop="buyName" borderBottom>
+				<uv-form-item label="订购人的手机号" prop="buyPhone" borderBottom>
 					<uv-input v-model="buyOrderForm.buyPhone" border="none" placeholder="订购人的手机号">
 					</uv-input>
 				</uv-form-item>
 				<uv-form-item label="期望送达日期" prop="deliveryDate" borderBottom>
-					<uv-input v-model="buyOrderForm.deliveryDate" border="none" placeholder="期送达日期" @click="openSelect">
-					</uv-input>
+					<text v-if="!buyOrderForm.deliveryDate" class="placeholder-color" @click="openSelect">期望送达日期</text>
+					<text v-else  @click="openSelect">{{buyOrderForm.deliveryDate}}</text>
 				</uv-form-item>
 				<uv-form-item label="订单备注" prop="blessing" borderBottom>
 					<uv-textarea v-model="buyOrderForm.blessing"
@@ -67,13 +68,12 @@
 		<!-- 支付区域 -->
 		<view class="footer detail-flex">
 			<view class="left"> ¥{{orderDetail.totalAmount}} </view>
-			<viwe class="right" @click="submitOrder">提交订单</viwe>
+			<view class="right" @click="submitOrder">提交订单</view>
 		</view>
-
-		<van-popup show="{{ show }}" round position="bottom" custom-style="height: 50%" bind:close="onCancelTimePicker">
-			<van-datetime-picker type="date" min-date="{{ minDate }}" bind:confirm="onConfirmTimerPicker"
-				bind:cancel="onCancelTimePicker" />
-		</van-popup>
+		
+		<!-- 期望送达日期选择器 -->
+		<uv-datetime-picker ref="datetimePickerRef" mode="date" @confirm="datetimePickerConfirm">
+		</uv-datetime-picker>
 	</view>
 </template>
 
@@ -85,6 +85,9 @@
 	import {
 		onLoad
 	} from '@dcloudio/uni-app';
+	import {
+		formatTime
+	} from '../../../utils/formatTime';
 	import {
 		reqOrderTrade,
 		reqGetOrderAddress,
@@ -106,7 +109,43 @@
 		blessing: ''
 	})
 
+	const buyOrderFormRules = {
+		buyName: {
+			type: 'string',
+			required: true,
+			message: '请填写订购人的姓名',
+			trigger: ['blur', 'change']
+		},
+		buyPhone: {
+			type: 'string',
+			required: true,
+			message: '请填写订购人的手机号',
+			trigger: ['blur', 'change']
+		},
+		deliveryDate: {
+			type: 'string',
+			required: true,
+			message: '请选择期望送达的日期',
+			trigger: ['blur', 'change']
+		},
+		blessing: {
+			type: 'string',
+			required: true,
+			message: '请填写备注信息',
+			trigger: ['blur', 'change']
+		}
+	}
+
+	const buyOrderFormRef = ref(null);
+	const datetimePickerRef = ref(null);
 	const dateSelectRef = ref(null);
+
+
+	const datetimePickerConfirm = (e) => {
+		console.log('confirm', e);
+		buyOrderForm.deliveryDate = formatTime(new Date(e.value))
+		buyOrderFormRef.value.clearValidate('deliveryDate')
+	}
 
 	onLoad((option) => {
 		routeParam.value = {
@@ -117,7 +156,8 @@
 	})
 
 	const openSelect = () => {
-		dateSelectRef.value.open();
+		// dateSelectRef.value.open();
+		datetimePickerRef.value.open();
 	}
 
 	// 获取订单详情数据
@@ -179,32 +219,42 @@
 	}
 
 	// 提交订单
-	const submitOrder = async () => {
-		const {
-			buyName,
-			buyPhone,
-			deliveryDate,
-			blessing,
-		} = buyOrderForm
-		const req = {
-			cartList: orderDetail.value.cartVoList,
-			buyName,
-			buyPhone,
-			deliveryDate,
-			remarks: blessing,
-			userAddressId: addressData.value.id
-		}
-		const {
-			code,
-			data
-		} = await reqSubmitOrder(req)
+	const submitOrder = () => {
+		// 验证表单数据的合法性
+		buyOrderFormRef.value.validate().then(async res => {
+			const {
+				buyName,
+				buyPhone,
+				deliveryDate,
+				blessing,
+			} = buyOrderForm
+			const req = {
+				cartList: orderDetail.value.cartVoList,
+				buyName,
+				buyPhone,
+				deliveryDate,
+				remarks: blessing,
+				userAddressId: addressData.value.id
+			}
+			const {
+				code,
+				data
+			} = await reqSubmitOrder(req)
 
-		if (code === 200) {
-			// 存储支付需要的预付单订单编号
-			orderNo.value = data;
-			// 获取预付单信息，支付参数
-			getWechatPrevPay()
-		}
+			if (code === 200) {
+				// 存储支付需要的预付单订单编号
+				orderNo.value = data;
+				// 获取预付单信息，支付参数
+				getWechatPrevPay()
+			}
+		}).catch(errors => {
+			if (errors.length > 0) {
+				uni.showToast({
+					icon: 'error',
+					title: '表单校验失败'
+				})
+			}
+		})
 	}
 
 	// 获取预支付订单信息，支付参数
@@ -256,6 +306,9 @@
 </script>
 
 <style lang="scss" scoped>
+	.placeholder-color {
+		color: #ccc;
+	}
 	.detail-flex {
 		display: flex;
 	}
