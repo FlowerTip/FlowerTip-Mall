@@ -298,7 +298,7 @@
 			}
 		} catch (error) {
 			uni.flowerTipToast({
-				title: '支付遇到问题，请联系客服',
+				title: '支付失败请重试',
 				icon: 'error'
 			})
 		}
