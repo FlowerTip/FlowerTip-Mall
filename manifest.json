@@ -18,7 +18,8 @@
         },
         /* 模块配置 */
         "modules" : {
-            "Payment" : {}
+            "Payment" : {},
+            "Geolocation" : {}
         },
         /* 应用发布信息 */
         "distribute" : {
@@ -51,10 +52,10 @@
             "sdkConfigs" : {
                 "geolocation" : {
                     "amap" : {
-                        "name" : "",
+                        "name" : "amap_17516019587ANVSMRgSz",
                         "__platform__" : [ "ios", "android" ],
-                        "appkey_ios" : "",
-                        "appkey_android" : ""
+                        "appkey_ios" : "1c791ea90292b714f27243916b2dcdaa",
+                        "appkey_android" : "1c791ea90292b714f27243916b2dcdaa"
                     }
                 },
                 "payment" : {
@@ -96,7 +97,13 @@
                         "spotlight@3x" : "unpackage/res/icons/120x120.png"
                     }
                 }
+            },
+            "splashscreen" : {
+                "androidStyle" : "common"
             }
+        },
+        "uniStatistics" : {
+            "enable" : true
         }
     },
     /* 快应用特有相关 */
@@ -118,6 +125,9 @@
             "scope.userLocation" : {
                 "desc" : "添加收货地址时，方便用户选择所在位置"
             }
+        },
+        "uniStatistics" : {
+            "enable" : true
         }
     },
     "mp-alipay" : {
@@ -130,7 +140,8 @@
         "usingComponents" : true
     },
     "uniStatistics" : {
-        "enable" : false
+        "enable" : false,
+        "version" : "2"
     },
     "vueVersion" : "3",
     "router" : {
@@ -156,6 +167,9 @@
         "router" : {
             "base" : "/mall/",
             "mode" : "hash"
+        },
+        "uniStatistics" : {
+            "enable" : true
         }
     }
 }
