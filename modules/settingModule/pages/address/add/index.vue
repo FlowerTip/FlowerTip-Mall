@@ -20,7 +20,7 @@
 		</uv-form>
 		<view class="row">
 			<text class="title">设置默认地址</text>
-			<uv-switch v-model="isDefault" active-color="#f3514f" size="20"></uv-switch>
+			<uv-switch v-model="addressForm.isDefault" active-color="#f3514f" size="20"></uv-switch>
 		</view>
 		<!-- 提交按钮 -->
 		<button class="button" @click="saveAddrssForm">保存</button>
@@ -74,9 +74,9 @@
 		}
 	}
 
-	const isDefault = ref(false);
 	const pickerRef = ref(null);
 	const addressForm = reactive({
+		id: '',
 		name: '',
 		phone: '',
 		provinceName: '',
@@ -87,7 +87,7 @@
 		districtCode: '',
 		address: '',
 		fullAddress: '',
-		isDefault: 0,
+		isDefault: false,
 		id: '',
 		regionList: ''
 	})
@@ -166,6 +166,8 @@
 			data
 		} = await reqGetAddressDetail(id)
 		if (code === 200) {
+			addressForm.id = data.id;
+			addressForm.isDefault = data.isDefault == 1 ? true : false;
 			addressForm.name = data.name;
 			addressForm.address = data.address;
 			addressForm.phone = data.phone;
@@ -206,7 +208,8 @@
 		addressFormRef.value.validate().then(async res => {
 			const reqParams = {
 				...addressForm,
-				fullAddress: addressForm.fullAddress + addressForm.address
+				fullAddress: addressForm.fullAddress + addressForm.address,
+				isDefault: addressForm.isDefault ? 1 : 0
 			}
 			delete reqParams.regionList
 			console.log(reqParams, 'reqParams');

@@ -115,7 +115,7 @@
 
 <style lang="scss" scoped>
 	.address-list {
-		width: 750rpx;
+		width: 100%;
 		height: 100%;
 		overflow-x: hidden;
 	}

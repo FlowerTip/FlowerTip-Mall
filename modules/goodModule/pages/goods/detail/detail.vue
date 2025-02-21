@@ -241,6 +241,7 @@
 
 <style lang="scss" scoped>
 	.footer_bar {
+		width: 100%;
 		position: fixed;
 		bottom: 0;
 		left: 0;
