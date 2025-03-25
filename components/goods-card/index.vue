@@ -8,20 +8,20 @@
 	    <!-- 商品详细信息 -->
 	    <view class="goods_item_info">
 	      <!-- 商品名称 -->
-	      <text class="goods_item_info_name">{{goodItem.name}}</text>
+	      <text class="goods_item_info_name">{{goodItem.Cpmc}}</text>
 	      <!-- 商品描述 -->
-	      <text class="goods_item_info_promo">{{goodItem.packing}}</text>
+	      <text class="goods_item_info_promo">{{goodItem.Instro}}</text>
 	      <!-- 商品价格 -->
 	      <view class="goods_item_info_bottom">
 	        <view class="goods_item_info_price">
-	          <text class="text">¥</text>{{goodItem.price}}
+	          <text class="text">¥</text>{{goodItem.Price}}
 	        </view>
 	        <view class="goods_item_info_origin_price">
-	          <text class="text">¥</text> 1{{goodItem.marketPrice}}
+	          <text class="text">¥</text> {{goodItem.LinePrice}}
 	        </view>
 	        <!-- 加入购物车图片 -->
 	        <view class="goods_item_info_btn">
-	          <image class="goods_image" src="https://gitee.com/flowerTip/person-file/raw/master/buybtn.png" mode="aspectFill" :lazy-load="true" />
+	          <image class="goods_image" src="https://mp-ab666efd-69a6-4fa6-9915-b0a6e7ee1bdf.cdn.bspapp.com/cart-active.png" mode="aspectFill" :lazy-load="true" />
 	        </view>
 	      </view>
 	    </view>
@@ -119,6 +119,11 @@
 	
 	.goods_item_info_origin_price .text {
 	  font-size: 20rpx;
+	}
+	.goods_item_info_btn image {
+		width: 20rpx;
+		height: 20rpx;
+		cursor: pointer;
 	}
 	
 </style>

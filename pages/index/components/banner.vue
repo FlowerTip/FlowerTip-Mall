@@ -1,25 +1,27 @@
 <template>
 	<!-- 轮播图 -->
-	<view class="swiper-box">
-		<swiper autoplay class="swiper" indicator-active-color="#FF734C" interval="2000" duration="1000"
-			indicator-color="rgba(0, 0, 0, .3)" @change="swiperChangeHandler">
-			<template v-for="(item, index) in bannerList" :key="index">
-				<swiper-item class="swiper-item">
-					<navigator class="navigator" :url="`/modules/goodModule/pages/goods/detail/detail?goodsId=${item.id}`">
-						<image class="img" :src="item.imageUrl" mode="aspectFill"></image>
-					</navigator>
-				</swiper-item>
-			</template>
-		</swiper>
-
-		<!-- 轮播图的面板指示点，因为面板指示点不支持，所以我们只能通过自定义结构的方式 -->
-		<view class="indicator">
-			<!-- active 类名：当前被激活的面板指示点颜色 -->
-			<!-- rectangle 类名：默认的面板指示点颜色 -->
-			<text v-for="i in bannerList.length" :key="i"
-				:class="[(i - 1) === activeIndex ? 'active rectangle' : 'rectangle']"></text>
+	<unicloud-db v-slot:default="{data, loading, error, options}" collection="banners" field="imageUrl">
+		<view class="swiper-box">
+			<swiper autoplay class="swiper" indicator-active-color="#FF734C" interval="2000" duration="1000"
+				indicator-color="rgba(0, 0, 0, .3)" @change="swiperChangeHandler">
+				<template v-for="item in data" :key="item._id">
+					<swiper-item class="swiper-item">
+						<navigator class="navigator" :url="`/modules/goodModule/pages/goods/detail/detail?goodsId=${item._id}`">
+							<image class="img" :src="item.imageUrl" mode="aspectFill"></image>
+						</navigator>
+					</swiper-item>
+				</template>
+			</swiper>
+		
+			<!-- 轮播图的面板指示点，因为面板指示点不支持，所以我们只能通过自定义结构的方式 -->
+			<view class="indicator">
+				<!-- active 类名：当前被激活的面板指示点颜色 -->
+				<!-- rectangle 类名：默认的面板指示点颜色 -->
+				<text v-for="i in data.length" :key="i"
+					:class="[(i - 1) === activeIndex ? 'active rectangle' : 'rectangle']"></text>
+			</view>
 		</view>
-	</view>
+	</unicloud-db>
 </template>
 
 <script setup>

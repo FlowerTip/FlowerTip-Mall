@@ -47,7 +47,6 @@
 	import {
 		reqIndexPageData
 	} from '../../api/index'
-
 	const bannerList = ref([]);
 	const cateList = ref([]);
 	const activeList = ref([]);
@@ -65,7 +64,28 @@
 		loading.value = false;
 	}
 	onLoad(() => {
-		initData();
+		// initData();
+
+		const db = uniCloud.databaseForJQL();
+		db.collection('categories')
+			.get()
+			.then(res => {
+				console.log(res, 'shjju dai')
+				cateList.value = res.data;
+			})
+		db.collection('actives')
+			.get()
+			.then(res => {
+				console.log(res, 'shjju dai')
+				activeList.value = res.data;
+			})
+		db.collection('goods')
+			.get()
+			.then(res => {
+				console.log(res, 'shjju dai')
+				guessList.value = res.data;
+				hotList.value = res.data.reverse();
+			})
 	})
 
 	const gotoBack = () => {

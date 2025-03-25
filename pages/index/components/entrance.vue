@@ -1,11 +1,11 @@
 <template>
 	<view class="nav-list">
 		<!-- 一级分类导航容器 -->
-		<view v-for="(item, index) in cateList" :key="index" class="nav-item" :class="[index >= 5 ? 'small' : '']">
+		<view v-for="(item, index) in cateList" :key="item._id" class="nav-item" :class="[index >= 5 ? 'small' : '']">
 			<!-- 导航链接 -->
 			<view class="navigator-nav" @click="handlerNavPage(item)">
 				<image class="nav-img" :src="item.imageUrl" mode="aspectFill" />
-				<text class="nav-text">{{item.name}}</text>
+				<text class="nav-text">{{item.title}}</text>
 			</view>
 		</view>
 	</view>
