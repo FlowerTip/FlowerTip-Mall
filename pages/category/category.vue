@@ -3,9 +3,9 @@
 		<!-- 左侧的滚动视图区域 -->
 		<scroll-view class="category-left-view" scroll-y>
 			<!-- 一级分类 -->
-			<template v-for="item in categoryList" :key="item.id">
-				<view :class="[activeFirstLevelId === item.id ? 'left-view-item active' : 'left-view-item']"
-					@click="handlerBindTap" :data-id="item.id"> {{item.name}} </view>
+			<template v-for="item in categoryList" :key="item._id">
+				<view :class="[activeFirstLevelId === item._id ? 'left-view-item active' : 'left-view-item']"
+					@click="handlerBindTap" :data-id="item._id"> {{item.title}} </view>
 			</template>
 		</scroll-view>
 
@@ -16,7 +16,7 @@
 				<view v-for="(item, index) in secondLevelList" :key="index" class="right-view-item">
 					<view class="navigator" @click="handlerNavPage(item)">
 						<image class="goods_item_image" :src="item.imageUrl"></image>
-						<text class="goods_item_name">{{item.name}}</text>
+						<text class="goods_item_name">{{item.title}}</text>
 					</view>
 				</view>
 			</view>
@@ -45,17 +45,21 @@
 		initData();
 	})
 
-	const initData = async () => {
-		const res = await reqCategoryPageData()
-		const result = res.data;
-		activeFirstLevelId.value = result[0].id;
-		categoryList.value = result;
-		secondLevelList.value = result[0].children;
-		loading.value = false;
+	const initData = () => {
+		const db = uniCloud.databaseForJQL();
+		db.collection('categories')
+			.get()
+			.then(result => {
+				const data = result.data;
+				categoryList.value = data;
+				activeFirstLevelId.value = data[0]._id;
+				secondLevelList.value = data[0].children;
+				loading.value = false;
+			})
 	}
 
 	const handlerBindTap = (event) => {
-		const findItem = categoryList.value.find(item => item.id === event.target.dataset.id)
+		const findItem = categoryList.value.find(item => item._id === event.target.dataset.id)
 		activeFirstLevelId.value = event.target.dataset.id;
 		secondLevelList.value = findItem ? findItem.children : [];
 	}
