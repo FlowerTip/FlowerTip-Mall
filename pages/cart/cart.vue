@@ -10,7 +10,7 @@
 								<view class="goods-info">
 									<view class="left">
 										<uv-checkbox-group>
-											<uv-checkbox shape="circle" activeColor="#FA4126" :checked="item.isChecked == 1 ? true : false"
+											<uv-checkbox shape="circle" activeColor="#FA4126" :checked="item.isChecked"
 												@change="checkedChange(item, index)"></uv-checkbox>
 										</uv-checkbox-group>
 									</view>
@@ -41,10 +41,10 @@
 
 		<!-- 购物车列表为空展示的结构 -->
 		<uv-empty v-else :text="emptyDes" mode="car">
-			<navigator v-if="!userStore.token" url="/pages/login/login" style="padding-top: 20rpx;">
+			<navigator v-if="!userStore.token" url="/pages/login/login" open-type="navigate" style="padding-top: 20rpx;">
 				<uv-button type="error" class="bottom-button" color="#f3514f">去登录</uv-button>
 			</navigator>
-			<navigator v-else url="/pages/index/index" style="padding-top: 20rpx;">
+			<navigator v-else url="/pages/index/index" open-type="switchTab" style="padding-top: 20rpx;">
 				<uv-button type="error" class="bottom-button" color="#f3514f">去购物</uv-button>
 			</navigator>
 		</uv-empty>
@@ -62,7 +62,8 @@
 				<text class="price-num">{{(totalMoney / 100).toFixed(2)}}</text>
 			</view>
 			<view class="buybar">
-				<uv-button type="error" shape="circle" color="#FA4126" :customStyle="{width: '200rpx'}" @click="goOrderPage">去结算</uv-button>
+				<uv-button type="error" shape="circle" color="#FA4126" :customStyle="{width: '200rpx'}"
+					@click="goOrderPage">去结算</uv-button>
 			</view>
 		</view>
 	</view>
@@ -78,14 +79,7 @@
 	} from '@dcloudio/uni-app';
 
 	import useUserStore from '../../store/modules/userStore.js';
-	import {
-		reqGetCartList,
-		reqCheckAllCart,
-		reqCheckCart,
-		reqAddToCart,
-		reqDeleteCart
-	} from '../../api/cart';
-
+	const mall = uniCloud.importObject('mall') //第一步导入云对象
 	const userStore = useUserStore();
 
 	const emptyDes = ref('还没有添加商品，快去添加吧～')
@@ -99,13 +93,13 @@
 
 	// 全选按钮的状态根据购物车列表中每个商品的选中状态来计算
 	const selectedAll = computed(() => {
-		return cartList.value.length > 0 && cartList.value.every(item => item.isChecked === 1)
+		return cartList.value.length > 0 && cartList.value.every(item => item.isChecked)
 	});
 
 	// 计算全部选中商品的总价格
 	const totalMoney = computed(() => {
 		return cartList.value.reduce((total, item) => {
-			if (item.isChecked === 1) {
+			if (item.isChecked) {
 				return (total + (item.price * item.count) * 100)
 			} else {
 				return total
@@ -119,54 +113,60 @@
 			cartList.value = []
 			return
 		}
-		getCartList()
+		dbCartList();
 	})
 
-	// 获取购物车列表
-	const getCartList = async () => {
-		const {
-			code,
-			data
-		} = await reqGetCartList()
-		if (code === 200) {
-			if (data.length === 0) {
-				emptyDes.value = '还没有添加商品，快去添加吧～'
-				return
-			}
+	const dbCartList = async () => {
+		const data = await mall.getCartList({});
+		if (data.length === 0) {
+			emptyDes.value = '还没有添加商品，快去添加吧～'
+			cartList.value = []
+		} else {
 			cartList.value = data;
 		}
 	}
 
 	// 选中 || 取消选中商品
 	const checkedChange = async (item, index) => {
-		console.log(item, index, 'asdjsahj')
 		const {
 			goodsId,
 			isChecked,
 		} = item;
-		// 同步后台选中了某个商品，需要购买
+
 		const {
-			code
-		} = await reqCheckCart({
+			code,
+			message
+		} = await mall.checkedCart({
 			goodsId,
-			isChecked: isChecked == 0 ? 1 : 0
+			isChecked
 		})
-		// 同步成功后，本地数据也要同步修改
-		if (code === 200) {
-			cartList.value[index].isChecked = isChecked == 0 ? 1 : 0;
+		if (code === 0) {
+			cartList.value[index].isChecked = !isChecked;
+			uni.flowerTipToast({
+				title: message,
+				icon: 'success'
+			})
 		}
 	}
 	// 全部选中 || 取消全部选中商品
 	const selectedAllChange = async (value) => {
 		// 同步后台接口
-		const isChecked = value ? 1 : 0
+		const isChecked = value;
+
 		const {
-			code
-		} = await reqCheckAllCart(isChecked)
-		if (code === 200) {
+			code,
+			message
+		} = await mall.allCheckedCart({
+			isChecked
+		})
+		if (code === 0) {
 			cartList.value = cartList.value.map(item => {
 				item.isChecked = isChecked
 				return item
+			})
+			uni.flowerTipToast({
+				title: message,
+				icon: 'success'
 			})
 		}
 	}
@@ -176,16 +176,13 @@
 			content: '您确定删除该商品吗？'
 		})
 		if (result) {
-			const {
-				code,
-				message
-			} = await reqDeleteCart(item.goodsId)
-			if (code === 200) {
+			const {code, message} = await mall.delCart({id: item._id})
+			if (code === 0) {
 				uni.flowerTipToast({
 					title: message,
 					icon: 'success'
 				})
-				getCartList()
+				dbCartList()
 			}
 		}
 	}
@@ -218,6 +215,7 @@
 		z-index: 10;
 		// #ifdef H5
 		bottom: 100rpx;
+
 		// #endif
 		.buybar {
 			padding-right: 40rpx;
@@ -233,6 +231,7 @@
 
 	.goods-wrap {
 		padding: 16rpx 16rpx 100rpx 16rpx;
+
 		.goods-item {
 			margin-bottom: 10rpx;
 		}

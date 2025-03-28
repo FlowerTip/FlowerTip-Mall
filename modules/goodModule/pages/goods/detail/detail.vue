@@ -8,11 +8,11 @@
 		<!-- 商品的基本信息 -->
 		<view class="content">
 			<view class="price">
-				<view class="price-num">¥{{goodsInfo.price}}</view>
-				<view class="price-origin-num">¥{{goodsInfo.marketPrice}}</view>
+				<view class="price-num">¥{{goodsInfo.Price}}</view>
+				<view class="price-origin-num">¥{{goodsInfo.LinePrice}}</view>
 			</view>
-			<view class="title">{{goodsInfo.packing}}</view>
-			<view class="desc">{{goodsInfo.floralLanguage}}</view>
+			<view class="title">{{goodsInfo.Cpmc}}</view>
+			<view class="desc">{{goodsInfo.Instro}}</view>
 		</view>
 
 		<!-- 商品的详细信息 -->
@@ -30,7 +30,8 @@
 					<text class="label">首页</text>
 				</view>
 				<view class="item" @click="handlerNavPage('/pages/cart/cart')">
-					<uv-badge type="error" max="99" :value="allCount" :offset="allCount > 9 ? [-4, -10] : [-4, 2]" :absolute="true">
+					<uv-badge type="error" max="99" :value="allCount" :offset="allCount > 9 ? [-4, -10] : [-4, 2]"
+						:absolute="true">
 					</uv-badge>
 					<uv-icon name="shopping-cart" size="24"></uv-icon>
 					<text class="label">购物车</text>
@@ -48,25 +49,24 @@
 
 		<!-- 弹窗层 -->
 		<view>
-			<uv-action-sheet ref="actionSheetRef" :closeOnClickOverlay="true"
-				:closeOnClickAction="false" :round="15">
+			<uv-action-sheet ref="actionSheetRef" :closeOnClickOverlay="true" :closeOnClickAction="false" :round="15">
 				<view class="sheet-wrapper">
 					<view class="goods-item">
 						<!-- 需要购买的商品图片 -->
 						<view class="mid">
 							<image class="img" :src="goodsInfo.imageUrl" :data-src="goodsInfo.imageUrl"
-								:data-images="goodsInfo.detailList" @click="handlePreview" />
+								:data-images="[goodsInfo.imageUrl].concat(goodsInfo.detailList)" @click="handlePreview" />
 						</view>
 
 						<!-- 商品基本信息 -->
 						<view class="right">
 							<!-- 商品名字 -->
-							<view class="title"> {{goodsInfo.packing}} </view>
+							<view class="title"> {{goodsInfo.Cpmc}} {{goodsInfo.Instro}}</view>
 							<!-- 商品价格 -->
 							<view class="buy">
 								<view class="price">
 									<view class="symbol">¥</view>
-									<view class="num">{{goodsInfo.price}}</view>
+									<view class="num">{{goodsInfo.Price}}</view>
 								</view>
 
 								<!-- 步进器组件控制购买数量 -->
@@ -110,7 +110,7 @@
 		reqGetCartList,
 		reqAddToCart
 	} from '../../../../../api/cart'
-
+	const mall = uniCloud.importObject('mall') //第一步导入云对象
 	const currGoodId = ref('');
 	const loading = ref(true);
 	const goodsInfo = ref({}); // 商品详情
@@ -129,25 +129,29 @@
 			goodsId
 		} = options;
 		currGoodId.value = goodsId;
+		console.log(goodsId, 'goodsId')
 		initData(goodsId)
 		getCarCount();
 	})
 
 	const initData = async (id) => {
-		const res = await reqGoodDetailData(id)
-		goodsInfo.value = Object.assign({}, res.data);
-		loading.value = false;
+		const db = uniCloud.databaseForJQL();
+		db.collection('goods')
+			.where({
+				_id: id
+			})
+			.get()
+			.then(res => {
+				console.log(res, '@@@@Res');
+				goodsInfo.value = Object.assign({}, res.data[0]);
+				loading.value = false;
+			})
 	}
 
 	// 获取购物车数量
 	const getCarCount = async () => {
-		const {
-			code,
-			data
-		} = await reqGetCartList()
-		if (code === 200) {
-			allCount.value = data.reduce((prev, next) => (prev + next.count), 0)
-		}
+		const data = await mall.getCartList({});
+		allCount.value = data.reduce((prev, next) => (prev + next.count), 0)
 	}
 
 
@@ -196,14 +200,16 @@
 		}
 		// 加入购物车
 		if (buyType.value === 0) {
+
 			const {
 				code,
 				message
-			} = await reqAddToCart({
+			} = await mall.addCartList({
 				goodsId,
-				count: count.value
+				count: count.value,
+				blessing: blessing.value
 			})
-			if (code === 200) {
+			if (code == 0) {
 				uni.flowerTipToast({
 					title: message,
 					icon: 'success'

@@ -53,22 +53,33 @@
 
 	const initData = async (options) => {
 		isLoading.value = true;
+		const db = uniCloud.databaseForJQL();
 		const reqParams = {
 			...options,
 			page: page.value,
 			limit: limit.value
 		}
-		console.log(reqParams, 'reqParams');
-		const res = await reqGoodsPageData(reqParams)
-		if (res.code === 200) {
-			goodsList.value = [...goodsList.value, ...res.data.records];
-			total.value = res.data.total;
-			loading.value = false;
+		db.collection('goods')
+		.get()
+		.then(res => {
+			goodsList.value = res.data;
+			total.value = res.data.length;
 			isLoading.value = false;
-			if (total.value == 0) {
-				isFinish.value = true;
-			}
-		}
+			isFinish.value = true;
+		})
+		
+		
+		// console.log(reqParams, 'reqParams');
+		// const res = await reqGoodsPageData(reqParams)
+		// if (res.code === 200) {
+		// 	goodsList.value = [...goodsList.value, ...res.data.records];
+		// 	total.value = res.data.total;
+		// 	loading.value = false;
+		// 	isLoading.value = false;
+		// 	if (total.value == 0) {
+		// 		isFinish.value = true;
+		// 	}
+		// }
 	}
 
 	const gotoBack = () => {

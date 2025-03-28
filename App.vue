@@ -1,6 +1,7 @@
 <template>
 </template>
 <script setup>
+	// import uniIdPageInit from '@/uni_modules/uni-id-pages/init.js';
 	import {
 		onLaunch,
 		onShow,

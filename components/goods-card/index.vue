@@ -40,7 +40,7 @@
 	
 	const handlerNavPage = (item) => {
 		uni.navigateTo({
-			url: `/modules/goodModule/pages/goods/detail/detail?goodsId=${item.id}`
+			url: `/modules/goodModule/pages/goods/detail/detail?goodsId=${item._id}`
 		})
 	}
 </script>
