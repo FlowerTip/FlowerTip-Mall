@@ -10,8 +10,10 @@
 						:src="userStore.userInfo.headimgurl || 'https://gitee.com/flowerTip/person-file/raw/master/avatar.png'" />
 				</button>
 				<!-- #endif -->
+				<!-- #ifdef H5 -->
 				<image
 					:src="userStore.userInfo.headimgurl || 'https://gitee.com/flowerTip/person-file/raw/master/avatar.png'" />
+				<!-- #endif -->
 			</view>
 		</view>
 

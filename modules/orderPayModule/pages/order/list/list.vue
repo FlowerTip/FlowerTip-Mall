@@ -54,6 +54,8 @@
 		reqGetOrderList
 	} from '../../../api/order'
 
+	const mall = uniCloud.importObject('mall');
+
 	const orderList = ref([]);
 	const total = ref(0);
 	const loading = ref(true);
@@ -72,13 +74,13 @@
 		const {
 			code,
 			data
-		} = await reqGetOrderList({
+		} = await mall.getOrderList({
 			page: page.value,
 			limit: limit.value
 		})
-		if (code === 200) {
-			orderList.value = [...orderList.value, ...data.records];
-			total.value = data.total;
+		if (code === 0) {
+			orderList.value = [...orderList.value, ...data];
+			total.value = data.length;
 			loading.value = false;
 			isLoading.value = false
 			if (total.value === 0) {
@@ -96,8 +98,9 @@
 
 	// 订单详情
 	const goOrderDetail = (item) => {
+		console.log(item.id, 'asdsad')
 		uni.navigateTo({
-			url: `/modules/orderPayModule/pages/order/detail/detail?orderno=${item.orderNo}`,
+			url: `/modules/orderPayModule/pages/order/detail/detail?orderNo=${item.id}`,
 		})
 	}
 	// 上拉加载更多

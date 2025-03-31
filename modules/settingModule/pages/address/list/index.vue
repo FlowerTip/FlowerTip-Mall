@@ -9,7 +9,7 @@
 								<view class="user-info">
 									<text>{{item.name}}</text>
 									<text>{{item.phone}}</text>
-									<text class="default-tag">{{item.isDefault == 1 ? '默认' : ''}}</text>
+									<text class="default-tag">{{item.isDefault ? '默认' : ''}}</text>
 								</view>
 
 								<view class="address-info">
@@ -17,7 +17,7 @@
 								</view>
 							</view>
 
-							<view class="editBtn" @click="toEdit(item.id)">
+							<view class="editBtn" @click="toEdit(item._id)">
 								<uv-icon name="edit-pen" size="22px" color="#999" />
 							</view>
 						</view>
@@ -51,6 +51,8 @@
 		reqDelAddress
 	} from '../../../api/address'
 
+	const mall = uniCloud.importObject('mall');
+
 	const options = ref([{
 		text: '删除',
 		style: {
@@ -72,13 +74,9 @@
 	})
 	// 获取收货地址列表
 	const getAddressList = async () => {
-		const {
-			code,
-			data
-		} = await reqGetAddressList()
-		if (code === 200) {
-			addressList.value = data;
-		}
+		
+		const res = await mall.getAddressList();
+		addressList.value = res;
 	}
 	// 去编辑页面
 	const toEdit = (id) => {
@@ -89,13 +87,12 @@
 
 	// 删除地址
 	const deleteAddress = async (item) => {
-		const {
-			code,
-			message
-		} = await reqDelAddress(item.id)
-		if (code === 200) {
+		const res = await mall.delAddress({
+			id: item._id
+		});
+		if (res.code === 0) {
 			uni.flowerTipToast({
-				title: message,
+				title: res.message,
 				icon: 'success'
 			})
 			getAddressList()

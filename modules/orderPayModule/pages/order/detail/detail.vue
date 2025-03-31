@@ -1,7 +1,7 @@
 <template>
 	<view class="container order">
 		<view class="address-card">
-			<view v-if="addressData.fullAddress" class="order-address detail-flex">
+			<view v-if="addressData && addressData.fullAddress" class="order-address detail-flex">
 				<view class="address-content">
 					<view class="title">{{addressData.fullAddress}}</view>
 					<view class="info detail-flex">
@@ -17,7 +17,7 @@
 				</view>
 			</view>
 			<!-- 添加收货地址 -->
-			<view class="add-address" @click="toAddress">
+			<view v-else class="add-address" @click="toAddress">
 				<uv-icon size="22px" name="edit-pen-fill" />
 				<view>添加收货地址</view>
 			</view>
@@ -37,7 +37,7 @@
 				</uv-form-item>
 				<uv-form-item label="期望送达日期" prop="deliveryDate" borderBottom>
 					<text v-if="!buyOrderForm.deliveryDate" class="placeholder-color" @click="openSelect">期望送达日期</text>
-					<text v-else  @click="openSelect">{{buyOrderForm.deliveryDate}}</text>
+					<text v-else @click="openSelect">{{buyOrderForm.deliveryDate}}</text>
 				</uv-form-item>
 				<uv-form-item label="订单备注" prop="blessing" borderBottom>
 					<uv-textarea v-model="buyOrderForm.blessing"
@@ -70,7 +70,7 @@
 			<view class="left"> ¥{{orderDetail.totalAmount}} </view>
 			<view class="right" @click="submitOrder">提交订单</view>
 		</view>
-		
+
 		<!-- 期望送达日期选择器 -->
 		<uv-datetime-picker ref="datetimePickerRef" mode="date" @confirm="datetimePickerConfirm">
 		</uv-datetime-picker>
@@ -96,6 +96,9 @@
 		reqWechatPrevPay,
 		reqQueryPayStatus
 	} from '../../../api/order'
+
+
+	const mall = uniCloud.importObject('mall');
 
 	const orderDetail = ref({});
 	const addressData = ref({});
@@ -153,61 +156,40 @@
 		}
 		getOrderTrade();
 		getOrderAddress();
+		console.log(option, 'adasdas')
+		if (option.orderNo) {
+			getOrderDetail(option.orderNo)
+		}
 	})
 
 	const openSelect = () => {
-		// dateSelectRef.value.open();
 		datetimePickerRef.value.open();
 	}
 
 	// 获取订单详情数据
 	const getOrderTrade = async () => {
-		const {
-			goodsId,
-			blessing
-		} = routeParam.value
-		// 从商品详情页面立即购买入口进来，查询立即购买的商品数据
-		if (goodsId) {
-			const {
-				code,
-				data
-			} = await reqOrderBuy(goodsId, {
-				blessing
-			})
-			if (code === 200) {
-				orderDetail.value = data;
-				buyOrderForm.blessing = blessing;
-			}
-		} else {
-			const {
-				code,
-				data
-			} = await reqOrderTrade()
-			if (code === 200) {
-				orderDetail.value = data;
-			}
+		const res = await mall.getOrderTrade();
+		if (res.code === 0) {
+			orderDetail.value = res.data;
 		}
 	}
 	// 获取订单默认地址
 	const getOrderAddress = async () => {
-		// 全局有，从全局取地址
-		// const globalData = getApp().globalData
-		// const {
-		//   address
-		// } = globalData
-		// if (Object.keys(address).length !== 0) {
-		//   this.setData({
-		//     addressData: address
-		//   })
-		//   return
-		// }
-		// 没有走接口查询
-		const {
-			code,
-			data
-		} = await reqGetOrderAddress()
-		if (code === 200) {
-			addressData.value = data;
+		const res = await mall.getOrderAddress();
+		if (res.code === 0) {
+			addressData.value = res.data;
+		}
+	}
+	// 获取订单订购详情信息
+	const getOrderDetail = async (id) => {
+		const res = await mall.getOrderDetail({
+			id
+		});
+		if (res.code === 0) {
+			buyOrderForm.buyName = res.data.buyName;
+			buyOrderForm.buyPhone = res.data.buyPhone;
+			buyOrderForm.deliveryDate = res.data.deliveryDate;
+			buyOrderForm.blessing = res.data.remarks;
 		}
 	}
 
@@ -234,18 +216,25 @@
 				buyPhone,
 				deliveryDate,
 				remarks: blessing,
-				userAddressId: addressData.value.id
+				userAddressId: addressData.value._id
 			}
-			const {
-				code,
-				data
-			} = await reqSubmitOrder(req)
 
-			if (code === 200) {
+			const result = await mall.createOrder(req)
+			if (result.code === 0) {
 				// 存储支付需要的预付单订单编号
-				orderNo.value = data;
+				orderNo.value = result.data;
+				uni.showToast({
+					icon: 'success',
+					title: result.message
+				})
+				
+				setTimeout(() => {
+					uni.switchTab({
+						url: '/pages/index/index'
+					})
+				}, 200)
 				// 获取预付单信息，支付参数
-				getWechatPrevPay()
+				// getWechatPrevPay()
 			}
 		}).catch(errors => {
 			if (errors.length > 0) {
@@ -309,6 +298,7 @@
 	.placeholder-color {
 		color: #ccc;
 	}
+
 	.detail-flex {
 		display: flex;
 	}

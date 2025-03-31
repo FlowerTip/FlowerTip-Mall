@@ -6,6 +6,9 @@
             "type" : "uni-app:h5"
         },
         {
+            "app-plus" : {
+                "launchtype" : "remote"
+            },
             "default" : {
                 "launchtype" : "local"
             },

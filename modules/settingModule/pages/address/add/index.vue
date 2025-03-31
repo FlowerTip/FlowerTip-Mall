@@ -46,6 +46,8 @@
 	} from '../../../api/address'
 	import regionJson from './region.js';
 
+	const mall = uniCloud.importObject('mall');
+
 	const addressFormRef = ref(null);
 	const addressFormRules = {
 		name: {
@@ -88,7 +90,6 @@
 		address: '',
 		fullAddress: '',
 		isDefault: false,
-		id: '',
 		regionList: ''
 	})
 
@@ -161,38 +162,48 @@
 
 	// 编辑时获取地址详情数据
 	const getAddressDetail = async (id) => {
-		const {
-			code,
-			data
-		} = await reqGetAddressDetail(id)
-		if (code === 200) {
-			addressForm.id = data.id;
-			addressForm.isDefault = data.isDefault == 1 ? true : false;
-			addressForm.name = data.name;
-			addressForm.address = data.address;
-			addressForm.phone = data.phone;
-			const pName = data.provinceName ? data.provinceName : '北京';
-			addressForm.regionList = pName + '/' + data.cityName + '/' + data.districtName;
-			const currentProvince = regionOriginData.find(item => data.provinceCode == item.code);
-			if (currentProvince) {
-				const currentCity = currentProvince.children.find(item => data.cityCode == item.code);
-				if (currentCity) {
-					const currentDistrict = currentCity.children.find(item => data.districtCode == item.code);
-					defaultValue.value = [currentProvince.id * 1, currentCity.id * 1, currentDistrict.id * 1];
-				}
+		uni.setNavigationBarTitle({
+			title: '编辑收货地址'
+		});
+		console.log(id, 'ididiidid')
+		const data = await mall.getAddressDetail({
+			id
+		})
+		addressForm.id = data._id;
+		addressForm.isDefault = data.isDefault;
+		addressForm.name = data.name;
+		addressForm.address = data.address;
+		addressForm.phone = data.phone;
+		addressForm.cityCode = data.cityCode;
+		addressForm.cityName = data.cityName;
+		addressForm.provinceCode = data.provinceCode;
+		addressForm.provinceName = data.provinceName;
+		addressForm.districtCode = data.districtCode;
+		addressForm.districtName = data.districtName;
+		const pName = data.provinceName ? data.provinceName : '北京';
+		addressForm.regionList = pName + '/' + data.cityName + '/' + data.districtName;
+		const currentProvince = regionOriginData.find(item => data.provinceCode == item.code);
+		if (currentProvince) {
+			const currentCity = currentProvince.children.find(item => data.cityCode == item.code);
+			if (currentCity) {
+				const currentDistrict = currentCity.children.find(item => data.districtCode == item.code);
+				defaultValue.value = [currentProvince.id * 1, currentCity.id * 1, currentDistrict.id * 1];
 			}
 		}
 	}
 
 	// 保存地址信息
 	const saveUserAddress = async (req) => {
-		const {
-			code,
-			message
-		} = await reqSaveUserAddress(req)
-		if (code === 200) {
+		let res = null;
+		if (req.id) {
+			res = await mall.updateAddress(req);
+		} else {
+			delete req.regionList;
+			res = await mall.addAddress(req);
+		}
+		if (res.code === 0) {
 			uni.flowerTipToast({
-				title: message,
+				title: res.message,
 				icon: 'success'
 			})
 			setTimeout(() => {
@@ -200,7 +211,6 @@
 					delta: 1
 				})
 			}, 500)
-
 		}
 	}
 	// 保存收货地址
@@ -208,11 +218,9 @@
 		addressFormRef.value.validate().then(async res => {
 			const reqParams = {
 				...addressForm,
-				fullAddress: addressForm.fullAddress + addressForm.address,
-				isDefault: addressForm.isDefault ? 1 : 0
+				fullAddress: addressForm.regionList + addressForm.address,
+				isDefault: addressForm.isDefault
 			}
-			delete reqParams.regionList
-			console.log(reqParams, 'reqParams');
 			saveUserAddress(reqParams)
 		}).catch(errors => {
 			if (errors.length > 0) {

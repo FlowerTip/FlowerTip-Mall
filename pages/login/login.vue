@@ -2,15 +2,14 @@
 	<!-- #ifdef MP-WEIXIN -->
 	<uv-empty mode="permission" icon="account-fill" text="请点击下方的按钮，授权登陆您的账户～">
 		<view style="padding-top: 20rpx;">
-			<uv-button type="error" @click="login" color="#f3514f">
+			<uv-button type="error" open-type="getUserInfo" @click="login" @getuserinfo="getUser" color="#f3514f">
 				点击授权登陆
 			</uv-button>
 		</view>
 	</uv-empty>
 	<!-- #endif -->
-	<!-- #ifdef H5 -->
+	<!-- #ifdef H5 || APP -->
 	<view class="login-container">
-		<uv-text text="如果没有注册账号, 登录默认注册信息" color="#f3514f" align="center"></uv-text>
 		<view class="title">花工坊</view>
 		<uv-form labelPosition="top" :labelWidth="80" :model="loginForm" :rules="rules" ref="loginFormRef">
 			<uv-form-item label="用户名" prop="username" borderBottom>
@@ -100,77 +99,46 @@
 	const login = async () => {
 		uni.login({
 			provider: 'weixin', //使用微信登录
-			success: function(loginRes) {
-				uniCloud.callFunction({
-						name: 'wechat',
-						data: {
-							code: loginRes.code
-						}
-					})
-					.then(res => {
-						console.log(res.result.data, '###datatatat');
-						setStorage('token', res.result.data.openid)
-						// 存储token到状态仓库
-						userStore.setToken(res.result.data.openid)
-						uni.flowerTipToast({
-							title: '登录成功',
-							icon: "success"
-						})
-					})
+			async success(loginRes) {
+				const data = await mall.wechat({
+					code: loginRes.code
+				});
+				setStorage('token', data.openid)
+				// 存储token到状态仓库
+				userStore.setToken(data.openid)
+				uni.flowerTipToast({
+					title: '登录成功',
+					icon: "success"
+				})
+				getUserinfo()
 			}
 		})
-
-
-		return;
-		// #ifdef MP-WEIXIN
-		const data = await uni.login();
-		if (data.errMsg === "login:ok") {
-			const db = uniCloud.databaseForJQL();
-			db.collection('uni-id-users')
-				.add(data.code)
-				.then(res => {
-					console.log(res, 'daodododoo')
-				})
-
-
-
-			// const res = await reqLogin(data.code)
-			// setStorage('token', res.data.token)
-			// // 存储token到状态仓库
-			// userStore.setToken(res.data.token)
-			// uni.flowerTipToast({
-			// 	title: '登录成功',
-			// 	icon: "success"
-			// })
-			// getUserinfo()
-		}
-		// #endif
-		// #ifndef MP-WEIXIN
-		const code = new Date().getTime();
-		const res = await reqLogin(code)
-		setStorage('token', res.data.token)
-		// 存储token到状态仓库
-		userStore.setToken(res.data.token)
-		uni.flowerTipToast({
-			title: '登录成功',
-			icon: "success"
-		})
-		getUserinfo()
-		// #endif
 	}
 	// 获取用户信息
 	const getUserinfo = async () => {
-		const res = await reqUserInfo()
-		if (res.code === 200) {
-			setStorage('userInfo', res.data)
-			// 存储用户信息到状态仓库
-			userStore.setUserInfo(res.data)
-			uni.navigateBack({
-				delta: 1
-			})
-		}
+		uni.getUserInfo({
+			provider: 'weixin',
+			success: function(infoRes) {
+				Object.keys(infoRes.userInfo).forEach(key => {
+					console.log('用户昵称为：' + key + infoRes.userInfo[key]);
+				})
+				const user = {
+					nickname: infoRes.userInfo.nickName,
+					headimgurl: infoRes.userInfo.avatarUrl
+				}
+				setStorage('userInfo', JSON.stringify(user))
+				// 存储用户信息到状态仓库
+				userStore.setUserInfo(user)
+				uni.navigateBack({
+					delta: 1
+				})
+			}
+		})
 	}
 
+	const getUser = (data) => {
+		console.log(data, 'asjdjasj')
+	}
 
 	const dbUserInfo = async (id) => {
 		const data = await mall.getUserInfo({

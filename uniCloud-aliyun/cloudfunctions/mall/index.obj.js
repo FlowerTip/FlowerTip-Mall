@@ -66,6 +66,7 @@ module.exports = {
 				'content-type': 'application/json'
 			}
 		})
+		console.log(res, 'dayin')
 		return res.data;
 	},
 	/**
@@ -187,5 +188,210 @@ module.exports = {
 			code: 0,
 			message: '删除成功'
 		};
+	},
+	/**
+	 * 查询收货地址列表
+	 */
+	async getAddressList() {
+		const db = uniCloud.databaseForJQL();
+		const res = await db.collection('addresses')
+			.get();
+		return res.data;
+	},
+	/**
+	 * 添加收货地址
+	 * @param {Object} param
+	 */
+	async addAddress(param) {
+		const db = uniCloud.databaseForJQL();
+		const result = await db.collection('addresses')
+			.add({
+				name: param.name,
+				phone: param.phone,
+				provinceName: param.provinceName,
+				provinceCode: param.provinceCode,
+				cityName: param.cityName,
+				cityCode: param.cityCode,
+				districtName: param.districtName,
+				districtCode: param.districtCode,
+				address: param.address,
+				fullAddress: param.fullAddress,
+				isDefault: param.isDefault
+			});
+		return {
+			code: 0,
+			message: '添加成功'
+		};
+	},
+	/**
+	 * 删除收货地址
+	 * @param {Object} param
+	 */
+	async delAddress(param) {
+		const db = uniCloud.databaseForJQL();
+		const result = await db.collection('addresses')
+			.where({
+				_id: param.id
+			})
+			.remove();
+		return {
+			code: 0,
+			message: '删除成功'
+		};
+	},
+	/**
+	 * 更新收货地址
+	 * @param {Object} param
+	 */
+	async updateAddress(param) {
+		const db = uniCloud.databaseForJQL();
+		const result = await db.collection('addresses')
+			.where({
+				_id: param.id
+			})
+			.update({
+				name: param.name,
+				phone: param.phone,
+				provinceName: param.provinceName,
+				provinceCode: param.provinceCode,
+				cityName: param.cityName,
+				cityCode: param.cityCode,
+				districtName: param.districtName,
+				districtCode: param.districtCode,
+				address: param.address,
+				fullAddress: param.fullAddress,
+				isDefault: param.isDefault,
+			});
+		return {
+			code: 0,
+			message: '更新成功'
+		};
+	},
+	/**
+	 * 查询地址详情
+	 * @param {Object} param
+	 */
+	async getAddressDetail(param) {
+		const db = uniCloud.databaseForJQL();
+		const result = await db.collection('addresses')
+			.where({
+				_id: param.id
+			})
+			.get();
+		console.log(result, 'TTTre');
+		return result.data[0];
+	},
+	/**
+	 * 获取订单详情
+	 */
+	async getOrderTrade() {
+		const db = uniCloud.databaseForJQL();
+		const result = await db.collection('carts')
+			.where({
+				isChecked: true
+			})
+			.get();
+		const totalMoney = result.data.reduce((prev, next) => prev + next.price * next.count, 0);
+		const totalCount = result.data.reduce((prev, next) => prev + next.count, 0);
+		const cartList = result.data.map(item => {
+			return {
+				goodsId: item.goodsId,
+				name: item.name,
+				imageUrl: item.imageUrl,
+				price: item.price,
+				count: item.count,
+				blessing: item.blessing,
+				isChecked: item.isChecked,
+				createTime: item.createTime,
+				updateTime: item.updateTime,
+			}
+		})
+		console.log(result, totalCount, totalMoney, cartList, '视觉很好')
+		return {
+			code: 0,
+			message: '获取订单详情成功',
+			data: {
+				totalAmount: totalMoney,
+				totalCount: totalCount,
+				cartVoList: cartList
+			}
+		}
+	},
+	/**
+	 * 获取订单地址
+	 */
+	async getOrderAddress() {
+		const db = uniCloud.databaseForJQL();
+		const result = await db.collection('addresses')
+			.where({
+				isDefault: true
+			})
+			.get();
+		console.log(result.data, 'asjdjasj')
+		return {
+			code: 0,
+			message: '获取订单地址成功',
+			data: result.data[0]
+		}
+	},
+	/**
+	 * 生成订单
+	 */
+	async createOrder(param) {
+		const db = uniCloud.databaseForJQL();
+		const result = await db.collection('orders')
+			.add({
+				...param
+			});
+		return {
+			code: 0,
+			message: '提交成功',
+			data: 'xxx1231231231'
+		}
+	},
+	/**
+	 * 获取订单列表
+	 * @param {Object} param
+	 */
+	async getOrderList(param) {
+		const db = uniCloud.databaseForJQL();
+		const result = await db.collection('orders')
+			.get();
+		console.log(result, 'pppp')
+		const orderList = result.data.map((item, index) => {
+			return {
+				id: item._id,
+				orderNo: 'ddbx000000000000000' + (index + 1),
+				orderStatus: 0,
+				orderDetailList: item.cartList.map(obj => {
+					return {
+						...obj,
+					}
+				}),
+				totalAmount: item.cartList.reduce((prev, next) => prev + next.price * next.count, 0)
+			}
+		})
+		return {
+			code: 0,
+			message: '查询成功',
+			data: orderList
+		}
+	},
+	/**
+	 * 获取订单订购详情信息
+	 * @param {Object} param
+	 */
+	async getOrderDetail (param) {
+		const db = uniCloud.databaseForJQL();
+		const result = await db.collection('orders')
+			.where({
+				_id: param.id
+			})
+			.get();
+		return {
+			code: 0,
+			message: '查询成功',
+			data: result.data[0]
+		}
 	}
 }
