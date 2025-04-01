@@ -30,6 +30,20 @@
 		<!-- 商品列表 -->
 		<goods-list title="猜你喜欢" :list="guessList"></goods-list>
 		<goods-list title="人气推荐" :list="hotList"></goods-list>
+
+		<!-- 下载APP提示 -->
+		<!-- #ifdef H5 -->
+		<uv-modal ref="modalRef" title="下载提示">
+			<view style="color: #666; text-align: center;">
+				<view><text>目前只提供安卓版本的 apk 安装包</text></view>
+				<view><text>安卓手机可点击下载软件安装软件 </text></view>
+			</view>
+			<template v-slot:confirmButton>
+				<uv-button type="primary" color="#f3514f" @click="handlerConfirm"
+					style="width: 80%; margin: 0rpx auto 40rpx;">下载软件</uv-button>
+			</template>
+		</uv-modal>
+		<!-- #endif -->
 	</view>
 </template>
 
@@ -38,7 +52,8 @@
 		ref
 	} from 'vue';
 	import {
-		onLoad
+		onLoad,
+		onReady
 	} from '@dcloudio/uni-app';
 	// import IndexSkt from './components/skt.vue';
 	import BannerList from './components/banner.vue';
@@ -47,6 +62,24 @@
 	import {
 		reqIndexPageData
 	} from '../../api/index'
+
+	// #ifdef H5
+	const modalRef = ref(null);
+	const handlerConfirm = () => {
+		//创建a标签
+		const a = document.createElement('a');
+		const href = "https://flowertip.site/mall/static/mall.apk";
+		// 下载链接
+		a.href = href;
+		a.target = '_blank';
+		// 下载文件名,如果后端没有返回，可以自己写a.download = '文件.pdf'
+		a.download = "花坊间.apk";
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+	}
+	// #endif
+	
 	const bannerList = ref([]);
 	const cateList = ref([]);
 	const activeList = ref([]);
@@ -54,18 +87,7 @@
 	const hotList = ref([]);
 	const loading = ref(false);
 
-	const initData = async () => {
-		const res = await reqIndexPageData();
-		bannerList.value = res[0].data;
-		cateList.value = res[1].data;
-		activeList.value = res[2].data;
-		guessList.value = res[3].data;
-		hotList.value = res[4].data;
-		loading.value = false;
-	}
 	onLoad(() => {
-		// initData();
-
 		const db = uniCloud.databaseForJQL();
 		db.collection('categories')
 			.get()
@@ -88,6 +110,10 @@
 			})
 	})
 
+	onReady(() => {
+		// 下载APP提示
+		modalRef.value?.open();
+	})
 	const gotoBack = () => {
 		uni.navigateBack({
 			delta: 1,

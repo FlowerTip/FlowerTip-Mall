@@ -1,7 +1,7 @@
 {
-    "name" : "花工坊",
+    "name" : "花栖间",
     "appid" : "__UNI__C410D30",
-    "description" : "花工坊：使用UniApp中采用Vue3+Pinna模式开发的H5，小程序，APP平台的，鲜花商城类的项目。",
+    "description" : "花栖间：使用UniApp中采用Vue3+Pinna模式开发的H5，小程序，APP平台的，鲜花商城类的项目。",
     "versionName" : "1.0.0",
     "versionCode" : "100",
     "transformPx" : false,
@@ -166,13 +166,14 @@
         }
     },
     "h5" : {
-        "title" : "花工坊",
+        "title" : "花栖间",
         "router" : {
             "base" : "/mall/",
             "mode" : "hash"
         },
         "uniStatistics" : {
             "enable" : true
-        }
+        },
+        "template" : "static/index.html"
     }
 }

@@ -3,7 +3,7 @@
 		{
 			"path": "pages/index/index",
 			"style": {
-				"navigationBarTitleText": "花工坊"
+				"navigationBarTitleText": "花栖间"
 			}
 		},
 		{
@@ -178,7 +178,7 @@
 	"globalStyle": {
 		"backgroundTextStyle": "light",
 		"navigationBarBackgroundColor": "#f3514f",
-		"navigationBarTitleText": "花工坊",
+		"navigationBarTitleText": "花栖间",
 		"navigationBarTextStyle": "white"
 	},
 	"tabBar": {
@@ -188,7 +188,7 @@
 		"borderStyle": "black",
 		"list": [{
 				"pagePath": "pages/index/index",
-				"text": "花工坊",
+				"text": "花栖间",
 				"iconPath": "static/tabbar/index.png",
 				"selectedIconPath": "static/tabbar/index-active.png"
 			},
