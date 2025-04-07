@@ -8,4 +8,6 @@
 
 1. H5效果展示：
 
-    ![H5效果图](docs/image.png)
+    ![首页](docs/image.png)
+
+    ![商品详情](docs/detail.png)
