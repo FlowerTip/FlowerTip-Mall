@@ -5,4 +5,4 @@
 
 1. H5效果展示：
 
-![H5效果图](docs/image.png)
+    ![H5效果图](docs/image.png)
